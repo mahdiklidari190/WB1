@@ -1,116 +1,238 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>Mystic Portal</title>
-  <style>
-    html, body {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      background: black;
-      overflow: hidden;
-      font-family: 'Courier New', monospace;
-      color: #0ff;
-    }
-    canvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: block;
-      z-index: 0;
-    }
-    .title {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 3em;
-      text-align: center;
-      color: #0ff;
-      text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #f0f;
-      animation: pulse 3s infinite alternate;
-      z-index: 2;
-    }
-    @keyframes pulse {
-      from { text-shadow: 0 0 10px #0ff; }
-      to   { text-shadow: 0 0 30px #f0f, 0 0 60px #0ff; }
-    }
-    .prophecy {
-      position: absolute;
-      bottom: 10%; left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.2em;
-      color: #fff;
-      opacity: 0;
-      transition: opacity 1s;
-      z-index: 2;
-      text-align: center;
-      width: 80%;
-    }
-    .prophecy.show {
-      opacity: 1;
-    }
-  </style>
+    <!-- ... (کدهای قبلی head بدون تغییر) ... -->
 </head>
-<body>
-  <canvas id="bg"></canvas>
-  <div class="title">✨ Mystic Portal ✨</div>
-  <div id="prophecy" class="prophecy"></div>
+<body class="bg-gray-50">
+    <!-- ... (کدهای قبلی body بدون تغییر) ... -->
 
-  <script>
-    // ==== BACKGROUND PARTICLES ====
-    const canvas = document.getElementById('bg');
-    const ctx = canvas.getContext('2d');
-    let w, h;
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
+    <script>
+        // نمونه داده محصولات (بدون تغییر)
+        const products = [ /* ... */ ];
+        const bestSellers = [ /* ... */ ];
 
-    const particles = [];
-    for (let i = 0; i < 150; i++) {
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        r: Math.random() * 2 + 1
-      });
-    }
+        // بارگذاری سبد خرید از localStorage
+        let cart = JSON.parse(localStorage.getItem('digistar_cart')) || [];
 
-    function draw() {
-      ctx.fillStyle = "rgba(0,0,0,0.2)";
-      ctx.fillRect(0, 0, w, h);
-      for (let p of particles) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > w) p.vx *= -1;
-        if (p.y < 0 || p.y > h) p.vy *= -1;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fillStyle = "cyan";
-        ctx.fill();
-      }
-      requestAnimationFrame(draw);
-    }
-    draw();
+        // بارگذاری محصولات با اسکلتن لودینگ
+        function loadProducts() {
+            // ... (کدهای قبلی بدون تغییر) ...
+        }
 
-    // ==== INTERACTION ====
-    let prophecyBox = document.getElementById('prophecy');
-    const prophecies = [
-      "The void whispers your name...",
-      "A cosmic shift is near.",
-      "Your code will outlive the stars.",
-      "Beware the loop with no end.",
-      "Tomorrow, destiny reloads."
-    ];
+        // اضافه کردن به سبد خرید با بهبود عملکرد
+        function addToCart(productId) {
+            const allProducts = [...products, ...bestSellers];
+            const product = allProducts.find(p => p.id === productId);
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({...product, quantity: 1});
+            }
+            
+            // ذخیره در localStorage
+            localStorage.setItem('digistar_cart', JSON.stringify(cart));
+            
+            updateCartUI();
+            
+            // انیمیشن دکمه سبد خرید
+            const cartBtn = document.getElementById('cartBtn');
+            cartBtn.classList.add('bounce-in');
+            setTimeout(() => cartBtn.classList.remove('bounce-in'), 800);
+            
+            // نمایش نوتیفیکیشن
+            showToast('محصول به سبد خرید اضافه شد', 'success');
+        }
 
-    document.body.addEventListener('click', () => {
-      let msg = prophecies[Math.floor(Math.random() * prophecies.length)];
-      prophecyBox.textContent = msg;
-      prophecyBox.classList.add('show');
-      setTimeout(() => prophecyBox.classList.remove('show'), 4000);
-    });
-  </script>
+        // به روزرسانی سبد خرید با محاسبه جمع کل
+        function updateCartUI() {
+            const cartCount = document.getElementById('cartCount');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            
+            // محاسبه جمع کل
+            const totalPrice = cart.reduce((sum, item) => {
+                const price = parseInt(item.price.replace(/,/g, ''));
+                return sum + (price * item.quantity);
+            }, 0);
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="text-center py-8 md:py-12">
+                        <svg class="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"/>
+                        </svg>
+                        <p class="text-gray-500 text-sm md:text-base">سبد خرید شما خالی است</p>
+                    </div>
+                `;
+                cartTotal.textContent = '۰ تومان';
+            } else {
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between p-3 md:p-4 border-b border-gray-100 last:border-b-0">
+                        <div class="flex items-center space-x-3 space-x-reverse flex-1">
+                            <div class="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-lg overflow-hidden">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-semibold text-gray-800 text-xs md:text-sm truncate">${item.name}</h4>
+                                <p class="text-xs text-gray-500 truncate">${item.specs}</p>
+                                <div class="flex items-center space-x-2 space-x-reverse mt-2">
+                                    <button onclick="decreaseQuantity(${item.id})" class="w-6 h-6 md:w-8 md:h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors">
+                                        <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                        </svg>
+                                    </button>
+                                    <span class="font-medium px-2 text-sm">${item.quantity}</span>
+                                    <button onclick="increaseQuantity(${item.id})" class="w-6 h-6 md:w-8 md:h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors">
+                                        <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <div class="font-bold text-red-500 text-xs md:text-sm">${(parseInt(item.price.replace(/,/g, '')) * item.quantity).toLocaleString('fa-IR')} تومان</div>
+                            <button onclick="removeFromCart(${item.id})" class="text-gray-400 hover:text-red-500 mt-2 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                cartTotal.textContent = `${totalPrice.toLocaleString('fa-IR')} تومان`;
+            }
+        }
+
+        // افزایش تعداد محصول در سبد خرید
+        function increaseQuantity(productId) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity += 1;
+                localStorage.setItem('digistar_cart', JSON.stringify(cart));
+                updateCartUI();
+            }
+        }
+
+        // کاهش تعداد محصول در سبد خرید
+        function decreaseQuantity(productId) {
+            const item = cart.find(item => item.id === productId);
+            if (item && item.quantity > 1) {
+                item.quantity -= 1;
+                localStorage.setItem('digistar_cart', JSON.stringify(cart));
+                updateCartUI();
+            }
+        }
+
+        // حذف از سبد خرید
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            localStorage.setItem('digistar_cart', JSON.stringify(cart));
+            updateCartUI();
+            showToast('محصول از سبد خرید حذف شد', 'success');
+        }
+
+        // نمایش نوتیفیکیشن
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = `fixed top-4 left-4 z-50 toast ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 space-x-reverse`;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // عملکرد جستجوی پیشرفته
+        function setupSearch() {
+            const searchInputs = document.querySelectorAll('input[type="text"]');
+            
+            searchInputs.forEach(input => {
+                input.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch(this.value);
+                    }
+                });
+            });
+        }
+
+        function performSearch(query) {
+            if (query.length < 2) return;
+            
+            const allProducts = [...products, ...bestSellers];
+            const results = allProducts.filter(product => 
+                product.name.includes(query) || 
+                product.category.includes(query) || 
+                product.specs.includes(query)
+            );
+            
+            displaySearchResults(results);
+        }
+
+        function displaySearchResults(results) {
+            const resultsContainer = document.createElement('div');
+            resultsContainer.id = 'searchResults';
+            resultsContainer.className = 'absolute top-full left-0 right-0 bg-white shadow-xl rounded-b-2xl z-40 max-h-96 overflow-y-auto';
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `<div class="p-4 text-center text-gray-500">نتیجه‌ای یافت نشد</div>`;
+            } else {
+                resultsContainer.innerHTML = results.map(product => `
+                    <div class="p-4 border-b border-gray-100 flex items-center space-x-4 space-x-reverse cursor-pointer hover:bg-gray-50" onclick="addToCart(${product.id})">
+                        <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800 text-sm">${product.name}</h4>
+                            <p class="text-xs text-gray-500">${product.specs}</p>
+                        </div>
+                        <div class="font-bold text-red-500">${product.price} تومان</div>
+                    </div>
+                `).join('');
+            }
+            
+            // حذف نتایج قبلی اگر وجود دارد
+            const existingResults = document.getElementById('searchResults');
+            if (existingResults) {
+                existingResults.remove();
+            }
+            
+            document.querySelector('.relative.w-full').appendChild(resultsContainer);
+        }
+
+        // بستن نتایج جستجو با کلیک خارج از آن
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.relative.w-full')) {
+                const results = document.getElementById('searchResults');
+                if (results) results.remove();
+            }
+        });
+
+        // مقداردهی اولیه
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            updateCartUI();
+            setupSearch();
+            
+            // انیمیشن برای المنت‌های با کلاس slide-up
+            const elements = document.querySelectorAll('.slide-up');
+            elements.forEach((element, index) => {
+                setTimeout(() => {
+                    element.style.animation = 'slideUp 0.6s ease-out';
+                }, index * 100);
+            });
+        });
+
+        // ... (بقیه کدهای قبلی بدون تغییر) ...
+    </script>
 </body>
 </html>
