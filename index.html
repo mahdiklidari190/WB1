@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Featured Songs</title>
+    <title>آهنگ های ویژه</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -15,7 +16,7 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
             min-height: 100vh;
@@ -41,27 +42,14 @@
             text-shadow: 0 2px 10px rgba(233, 69, 96, 0.3);
         }
 
-        .songs-scroll-container {
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-behavior: smooth;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+        .songs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
             padding: 10px 0;
         }
 
-        .songs-scroll-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        .songs-track {
-            display: flex;
-            gap: 15px;
-            padding: 20px 0;
-        }
-
         .song-card {
-            flex: 0 0 180px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -70,64 +58,70 @@
             overflow: hidden;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
-        .song-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #e94560, #0f3460);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .song-card.active {
-            flex: 0 0 220px;
-            transform: translateY(-15px) scale(1.05);
+        .song-card:hover {
+            transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-            z-index: 10;
         }
 
-        .song-card.active::before {
-            transform: scaleX(1);
-        }
-
-        .song-card.prev {
-            transform: translateX(-10px) scale(0.95);
-            opacity: 0.7;
-        }
-
-        .song-card.next {
-            transform: translateX(10px) scale(0.95);
-            opacity: 0.7;
+        .song-image-container {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
         }
 
         .song-image {
             width: 100%;
-            height: 140px;
+            height: 100%;
             object-fit: cover;
-            border-radius: 16px 16px 0 0;
-            transition: all 0.4s ease;
+            transition: transform 0.4s ease;
         }
 
-        .song-card.active .song-image {
-            height: 160px;
+        .song-card:hover .song-image {
+            transform: scale(1.05);
+        }
+
+        .song-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .song-card:hover .song-overlay {
+            opacity: 1;
         }
 
         .song-info {
             padding: 15px;
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-grow: 1;
+        }
+
+        .song-text {
+            flex: 1;
+            padding-left: 10px;
         }
 
         .song-title {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 700;
             color: #fff;
+            margin-bottom: 5px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -145,15 +139,15 @@
             background: linear-gradient(135deg, #e94560, #c63663);
             border: none;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            margin-top: 10px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 10px rgba(233, 69, 96, 0.3);
+            flex-shrink: 0;
         }
 
         .play-button:hover {
@@ -167,42 +161,102 @@
 
         .play-icon {
             color: white;
-            font-size: 16px;
-            margin-left: 2px;
+            font-size: 18px;
         }
 
-        .navigation-dots {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
+        .song-duration {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
         }
 
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .songs-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
         }
 
-        .dot.active {
-            background: #e94560;
-            transform: scale(1.2);
+        @media (max-width: 992px) {
+            .songs-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+            
+            .song-image-container {
+                height: 160px;
+            }
         }
 
         @media (max-width: 768px) {
-            .song-card {
-                flex: 0 0 160px;
+            .songs-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
             }
             
-            .song-card.active {
-                flex: 0 0 190px;
+            .song-image-container {
+                height: 140px;
+            }
+            
+            .song-info {
+                padding: 12px;
+            }
+            
+            .song-title {
+                font-size: 16px;
+            }
+            
+            .play-button {
+                width: 45px;
+                height: 45px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .songs-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 12px;
+            }
+            
+            .song-image-container {
+                height: 120px;
+            }
+            
+            .song-info {
+                padding: 10px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .song-text {
+                padding-left: 0;
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .play-button {
+                align-self: flex-end;
             }
             
             .featured-title {
                 font-size: 24px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .songs-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                padding: 10px;
+            }
+            
+            .featured-songs-container {
+                padding: 10px;
             }
         }
     </style>
@@ -211,73 +265,81 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState } = React;
 
         const FeaturedSongs = () => {
             const [playingId, setPlayingId] = useState(null);
-            const [activeIndex, setActiveIndex] = useState(0);
-            const scrollRef = useRef(null);
 
             const songs = [
                 {
                     id: 1,
-                    image: 'https://via.placeholder.com/300x200/0f3460/ffffff?text=Song+1',
-                    title: 'Midnight Dreams',
-                    artist: 'Luna Echo'
+                    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'رؤیای نیمه شب',
+                    artist: 'اکو لونا',
+                    duration: '3:45'
                 },
                 {
                     id: 2,
-                    image: 'https://via.placeholder.com/300x200/e94560/ffffff?text=Song+2',
-                    title: 'Electric Pulse',
-                    artist: 'Neon Waves'
+                    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'ضربان الکتریکی',
+                    artist: 'امواج نئون',
+                    duration: '4:20'
                 },
                 {
                     id: 3,
-                    image: 'https://via.placeholder.com/300x200/1a1a2e/ffffff?text=Song+3',
-                    title: 'Starlight Serenade',
-                    artist: 'Cosmic Harmony'
+                    image: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'آواز ستاره',
+                    artist: 'هارمونی کیهانی',
+                    duration: '3:15'
                 },
                 {
                     id: 4,
-                    image: 'https://via.placeholder.com/300x200/16213e/ffffff?text=Song+4',
-                    title: 'Urban Jungle',
-                    artist: 'Metro Beats'
+                    image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'جنگل شهری',
+                    artist: 'بیت مترو',
+                    duration: '3:50'
                 },
                 {
                     id: 5,
-                    image: 'https://via.placeholder.com/300x200/533483/ffffff?text=Song+5',
-                    title: 'Ocean Breeze',
-                    artist: 'Coastal Sounds'
+                    image: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'نسیم اقیانوس',
+                    artist: 'صداهای ساحلی',
+                    duration: '4:05'
                 },
                 {
                     id: 6,
-                    image: 'https://via.placeholder.com/300x200/0f3460/ffffff?text=Song+6',
-                    title: 'Mountain High',
-                    artist: 'Alpine Echo'
+                    image: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'بلندای کوه',
+                    artist: 'اکو آلپاین',
+                    duration: '3:30'
                 },
                 {
                     id: 7,
-                    image: 'https://via.placeholder.com/300x200/e94560/ffffff?text=Song+7',
-                    title: 'Desert Mirage',
-                    artist: 'Sandy Dunes'
+                    image: 'https://images.unsplash.com/photo-1487180144351-b8472da7d491?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'سراب صحرا',
+                    artist: 'تپه های شنی',
+                    duration: '4:15'
                 },
                 {
                     id: 8,
-                    image: 'https://via.placeholder.com/300x200/1a1a2e/ffffff?text=Song+8',
-                    title: 'City Lights',
-                    artist: 'Urban Pulse'
+                    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'چراغ های شهر',
+                    artist: 'پالس شهری',
+                    duration: '3:40'
                 },
                 {
                     id: 9,
-                    image: 'https://via.placeholder.com/300x200/16213e/ffffff?text=Song+9',
-                    title: 'Forest Whisper',
-                    artist: 'Nature Sounds'
+                    image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'زمزمه جنگل',
+                    artist: 'صداهای طبیعت',
+                    duration: '4:25'
                 },
                 {
                     id: 10,
-                    image: 'https://via.placeholder.com/300x200/533483/ffffff?text=Song+10',
-                    title: 'Summer Vibes',
-                    artist: 'Sunny Beats'
+                    image: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80',
+                    title: 'حالات تابستان',
+                    artist: 'بیت های آفتابی',
+                    duration: '3:55'
                 }
             ];
 
@@ -289,75 +351,41 @@
                 }
             };
 
-            const scrollToIndex = (index) => {
-                const track = scrollRef.current;
-                if (!track) return;
-                
-                const cardWidth = 180 + 15; // Width + gap
-                track.scrollTo({
-                    left: index * cardWidth,
-                    behavior: 'smooth'
-                });
-                setActiveIndex(index);
-            };
-
-            useEffect(() => {
-                const track = scrollRef.current;
-                if (!track) return;
-
-                const handleScroll = () => {
-                    const { scrollLeft } = track;
-                    const cardWidth = 180 + 15; // Width + gap
-                    const index = Math.round(scrollLeft / cardWidth);
-                    setActiveIndex(Math.max(0, Math.min(index, songs.length - 1)));
-                };
-
-                track.addEventListener('scroll', handleScroll);
-                return () => track.removeEventListener('scroll', handleScroll);
-            }, [songs.length]);
-
             return (
                 <div className="featured-songs-container">
-                    <h2 className="featured-title">Featured Songs</h2>
-                    <div className="songs-scroll-container" ref={scrollRef}>
-                        <div className="songs-track">
-                            {songs.map((song, index) => (
-                                <div
-                                    key={song.id}
-                                    className={`song-card ${
-                                        index === activeIndex 
-                                            ? 'active' 
-                                            : index === activeIndex - 1 
-                                                ? 'prev' 
-                                                : index === activeIndex + 1 
-                                                    ? 'next' 
-                                                    : ''
-                                    }`}
-                                >
+                    <h2 className="featured-title">آهنگ های ویژه</h2>
+                    <div className="songs-grid">
+                        {songs.map((song) => (
+                            <div key={song.id} className="song-card">
+                                <div className="song-image-container">
                                     <img src={song.image} alt={song.title} className="song-image" />
-                                    <div className="song-info">
-                                        <div className="song-title">{song.title}</div>
-                                        <div className="song-artist">{song.artist}</div>
+                                    <div className="song-overlay">
                                         <button 
                                             className={`play-button ${playingId === song.id ? 'playing' : ''}`}
                                             onClick={() => togglePlay(song.id)}
                                         >
                                             <span className="play-icon">
-                                                {playingId === song.id ? '❚❚' : '▶'}
+                                                {playingId === song.id ? <i className="fas fa-pause"></i> : <i className="fas fa-play"></i>}
                                             </span>
                                         </button>
                                     </div>
+                                    <div className="song-duration">{song.duration}</div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="navigation-dots">
-                        {songs.map((_, index) => (
-                            <div
-                                key={index}
-                                className={`dot ${index === activeIndex ? 'active' : ''}`}
-                                onClick={() => scrollToIndex(index)}
-                            />
+                                <div className="song-info">
+                                    <div className="song-text">
+                                        <div className="song-title">{song.title}</div>
+                                        <div className="song-artist">{song.artist}</div>
+                                    </div>
+                                    <button 
+                                        className={`play-button ${playingId === song.id ? 'playing' : ''}`}
+                                        onClick={() => togglePlay(song.id)}
+                                    >
+                                        <span className="play-icon">
+                                            {playingId === song.id ? <i className="fas fa-pause"></i> : <i className="fas fa-play"></i>}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
