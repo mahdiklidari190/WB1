@@ -42,97 +42,98 @@
             text-shadow: 0 2px 10px rgba(233, 69, 96, 0.3);
         }
 
-        .songs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        .songs-scroll-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 40px 20px;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .songs-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .songs-track {
+            display: flex;
             gap: 20px;
-            padding: 10px 0;
+            padding: 20px 0;
+            height: 400px;
+            align-items: flex-end;
         }
 
         .song-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .song-card:hover {
-            transform: translateY(-10px);
+            flex: 0 0 300px;
+            height: 350px;
+            border-radius: 20px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
         }
 
-        .song-image-container {
-            position: relative;
-            width: 100%;
-            height: 180px;
-            overflow: hidden;
+        .song-card:not(.active) {
+            opacity: 0.7;
+            transform: scale(0.85);
+        }
+
+        .song-card.active {
+            transform: translateY(-40px) scale(1.05);
+            z-index: 10;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
         }
 
         .song-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-
-        .song-card:hover .song-image {
-            transform: scale(1.05);
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .song-overlay {
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            height: 50%;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
             display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .song-card:hover .song-overlay {
-            opacity: 1;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
         }
 
         .song-info {
-            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            flex-grow: 1;
+            width: 100%;
         }
 
         .song-text {
             flex: 1;
-            padding-left: 10px;
         }
 
         .song-title {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 700;
             color: #fff;
             margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .song-artist {
-            font-size: 14px;
-            color: #b8b8b8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 16px;
+            color: #e0e0e0;
+        }
+
+        .play-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .play-button {
@@ -147,7 +148,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 10px rgba(233, 69, 96, 0.3);
-            flex-shrink: 0;
         }
 
         .play-button:hover {
@@ -155,58 +155,52 @@
             box-shadow: 0 6px 15px rgba(233, 69, 96, 0.5);
         }
 
-        .play-button.playing {
-            background: linear-gradient(135deg, #0f3460, #1a1a2e);
-        }
-
-        .play-icon {
-            color: white;
-            font-size: 18px;
-        }
-
         .song-duration {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 12px;
+            color: #e0e0e0;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+
+        .navigation-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: #e94560;
+            transform: scale(1.2);
         }
 
         /* Responsive Design */
-        @media (max-width: 1200px) {
-            .songs-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            }
-        }
-
-        @media (max-width: 992px) {
-            .songs-grid {
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            }
-            
-            .song-image-container {
-                height: 160px;
-            }
-        }
-
         @media (max-width: 768px) {
-            .songs-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 15px;
+            .song-card {
+                flex: 0 0 250px;
+                height: 300px;
             }
             
-            .song-image-container {
-                height: 140px;
-            }
-            
-            .song-info {
-                padding: 12px;
+            .songs-track {
+                height: 350px;
             }
             
             .song-title {
-                font-size: 16px;
+                font-size: 18px;
+            }
+            
+            .song-artist {
+                font-size: 14px;
             }
             
             .play-button {
@@ -216,47 +210,25 @@
         }
 
         @media (max-width: 576px) {
-            .songs-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 12px;
+            .song-card {
+                flex: 0 0 200px;
+                height: 250px;
             }
             
-            .song-image-container {
-                height: 120px;
+            .songs-track {
+                height: 300px;
             }
             
-            .song-info {
-                padding: 10px;
-                flex-direction: column;
-                align-items: flex-start;
+            .song-overlay {
+                padding: 15px;
             }
             
-            .song-text {
-                padding-left: 0;
-                margin-bottom: 10px;
-                width: 100%;
-            }
-            
-            .play-button {
-                align-self: flex-end;
+            .song-title {
+                font-size: 16px;
             }
             
             .featured-title {
                 font-size: 24px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .songs-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            body {
-                padding: 10px;
-            }
-            
-            .featured-songs-container {
-                padding: 10px;
             }
         }
     </style>
@@ -265,10 +237,12 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect, useRef } = React;
 
         const FeaturedSongs = () => {
             const [playingId, setPlayingId] = useState(null);
+            const [activeIndex, setActiveIndex] = useState(0);
+            const scrollRef = useRef(null);
 
             const songs = [
                 {
@@ -351,41 +325,78 @@
                 }
             };
 
+            const scrollToIndex = (index) => {
+                const track = scrollRef.current;
+                if (!track) return;
+                
+                const cardWidth = 300 + 20; // Width + gap
+                track.scrollTo({
+                    left: index * cardWidth,
+                    behavior: 'smooth'
+                });
+                setActiveIndex(index);
+            };
+
+            useEffect(() => {
+                const track = scrollRef.current;
+                if (!track) return;
+
+                const handleScroll = () => {
+                    const { scrollLeft } = track;
+                    const cardWidth = 300 + 20; // Width + gap
+                    const index = Math.round(scrollLeft / cardWidth);
+                    setActiveIndex(Math.max(0, Math.min(index, songs.length - 1)));
+                };
+
+                track.addEventListener('scroll', handleScroll);
+                return () => track.removeEventListener('scroll', handleScroll);
+            }, [songs.length]);
+
             return (
                 <div className="featured-songs-container">
                     <h2 className="featured-title">آهنگ های ویژه</h2>
-                    <div className="songs-grid">
-                        {songs.map((song) => (
-                            <div key={song.id} className="song-card">
-                                <div className="song-image-container">
+                    <div className="songs-scroll-container" ref={scrollRef}>
+                        <div className="songs-track">
+                            {songs.map((song, index) => (
+                                <div
+                                    key={song.id}
+                                    className={`song-card ${index === activeIndex ? 'active' : ''}`}
+                                    onClick={() => scrollToIndex(index)}
+                                >
                                     <img src={song.image} alt={song.title} className="song-image" />
                                     <div className="song-overlay">
-                                        <button 
-                                            className={`play-button ${playingId === song.id ? 'playing' : ''}`}
-                                            onClick={() => togglePlay(song.id)}
-                                        >
-                                            <span className="play-icon">
-                                                {playingId === song.id ? <i className="fas fa-pause"></i> : <i className="fas fa-play"></i>}
-                                            </span>
-                                        </button>
+                                        <div className="song-info">
+                                            <div className="song-text">
+                                                <div className="song-title">{song.title}</div>
+                                                <div className="song-artist">{song.artist}</div>
+                                            </div>
+                                            <div className="play-controls">
+                                                <div className="song-duration">{song.duration}</div>
+                                                <button 
+                                                    className="play-button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        togglePlay(song.id);
+                                                    }}
+                                                >
+                                                    <span className="play-icon">
+                                                        {playingId === song.id ? <i className="fas fa-pause"></i> : <i className="fas fa-play"></i>}
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="song-duration">{song.duration}</div>
                                 </div>
-                                <div className="song-info">
-                                    <div className="song-text">
-                                        <div className="song-title">{song.title}</div>
-                                        <div className="song-artist">{song.artist}</div>
-                                    </div>
-                                    <button 
-                                        className={`play-button ${playingId === song.id ? 'playing' : ''}`}
-                                        onClick={() => togglePlay(song.id)}
-                                    >
-                                        <span className="play-icon">
-                                            {playingId === song.id ? <i className="fas fa-pause"></i> : <i className="fas fa-play"></i>}
-                                        </span>
-                                    </button>
-                                </div>
-                            </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="navigation-dots">
+                        {songs.map((_, index) => (
+                            <div
+                                key={index}
+                                className={`dot ${index === activeIndex ? 'active' : ''}`}
+                                onClick={() => scrollToIndex(index)}
+                            />
                         ))}
                     </div>
                 </div>
