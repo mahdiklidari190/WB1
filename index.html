@@ -8,97 +8,202 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        .featured-songs-container {
-            position: relative;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
             padding: 20px;
-            max-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .featured-songs-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            position: relative;
         }
 
         .featured-title {
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            margin: 0;
-            z-index: 10;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #e94560;
+            text-shadow: 0 2px 10px rgba(233, 69, 96, 0.3);
         }
 
         .songs-scroll-container {
             overflow-x: auto;
             overflow-y: hidden;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-            scrollbar-width: none; /* Hide scrollbar in Firefox */
-            -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 10px 0;
         }
 
         .songs-scroll-container::-webkit-scrollbar {
-            display: none; /* Hide scrollbar in WebKit browsers */
+            display: none;
         }
 
         .songs-track {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             padding: 20px 0;
         }
 
         .song-card {
-            flex: 0 0 300px; /* Fixed width for each card */
-            background: #f9f9f9;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            scroll-snap-align: center;
+            flex: 0 0 180px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s ease;
             position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .song-card:hover,
-        .song-card.active { /* For the centered card effect */
-            transform: translateY(-10px) scale(1.05);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 5;
+        .song-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e94560, #0f3460);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .song-card.active {
+            flex: 0 0 220px;
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        .song-card.active::before {
+            transform: scaleX(1);
+        }
+
+        .song-card.prev {
+            transform: translateX(-10px) scale(0.95);
+            opacity: 0.7;
+        }
+
+        .song-card.next {
+            transform: translateX(10px) scale(0.95);
+            opacity: 0.7;
         }
 
         .song-image {
             width: 100%;
-            height: 200px;
+            height: 140px;
             object-fit: cover;
-            border-radius: 12px 12px 0 0;
+            border-radius: 16px 16px 0 0;
+            transition: all 0.4s ease;
+        }
+
+        .song-card.active .song-image {
+            height: 160px;
         }
 
         .song-info {
             padding: 15px;
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .song-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .song-artist {
             font-size: 14px;
-            color: #666;
+            color: #b8b8b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .play-button {
-            background: none;
+            background: linear-gradient(135deg, #e94560, #c63663);
             border: none;
-            font-size: 24px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            padding: 0;
-            margin-left: auto;
-            transition: transform 0.2s ease;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(233, 69, 96, 0.3);
         }
 
         .play-button:hover {
             transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(233, 69, 96, 0.5);
+        }
+
+        .play-button.playing {
+            background: linear-gradient(135deg, #0f3460, #1a1a2e);
+        }
+
+        .play-icon {
+            color: white;
+            font-size: 16px;
+            margin-left: 2px;
+        }
+
+        .navigation-dots {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: #e94560;
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .song-card {
+                flex: 0 0 160px;
+            }
+            
+            .song-card.active {
+                flex: 0 0 190px;
+            }
+            
+            .featured-title {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
@@ -109,39 +214,91 @@
         const { useState, useEffect, useRef } = React;
 
         const FeaturedSongs = () => {
-            const [isPlaying, setIsPlaying] = useState(false);
+            const [playingId, setPlayingId] = useState(null);
             const [activeIndex, setActiveIndex] = useState(0);
             const scrollRef = useRef(null);
 
             const songs = [
                 {
                     id: 1,
-                    image: 'https://via.placeholder.com/300x200?text=Song+1', // Placeholder image
-                    title: 'Song Title 1',
-                    artist: 'Artist Name 1'
+                    image: 'https://via.placeholder.com/300x200/0f3460/ffffff?text=Song+1',
+                    title: 'Midnight Dreams',
+                    artist: 'Luna Echo'
                 },
                 {
                     id: 2,
-                    image: 'https://via.placeholder.com/300x200?text=Song+2',
-                    title: 'Song Title 2',
-                    artist: 'Artist Name 2'
+                    image: 'https://via.placeholder.com/300x200/e94560/ffffff?text=Song+2',
+                    title: 'Electric Pulse',
+                    artist: 'Neon Waves'
                 },
                 {
                     id: 3,
-                    image: 'https://via.placeholder.com/300x200?text=Song+3',
-                    title: 'Song Title 3',
-                    artist: 'Artist Name 3'
+                    image: 'https://via.placeholder.com/300x200/1a1a2e/ffffff?text=Song+3',
+                    title: 'Starlight Serenade',
+                    artist: 'Cosmic Harmony'
                 },
                 {
                     id: 4,
-                    image: 'https://via.placeholder.com/300x200?text=Song+4',
-                    title: 'Song Title 4',
-                    artist: 'Artist Name 4'
+                    image: 'https://via.placeholder.com/300x200/16213e/ffffff?text=Song+4',
+                    title: 'Urban Jungle',
+                    artist: 'Metro Beats'
+                },
+                {
+                    id: 5,
+                    image: 'https://via.placeholder.com/300x200/533483/ffffff?text=Song+5',
+                    title: 'Ocean Breeze',
+                    artist: 'Coastal Sounds'
+                },
+                {
+                    id: 6,
+                    image: 'https://via.placeholder.com/300x200/0f3460/ffffff?text=Song+6',
+                    title: 'Mountain High',
+                    artist: 'Alpine Echo'
+                },
+                {
+                    id: 7,
+                    image: 'https://via.placeholder.com/300x200/e94560/ffffff?text=Song+7',
+                    title: 'Desert Mirage',
+                    artist: 'Sandy Dunes'
+                },
+                {
+                    id: 8,
+                    image: 'https://via.placeholder.com/300x200/1a1a2e/ffffff?text=Song+8',
+                    title: 'City Lights',
+                    artist: 'Urban Pulse'
+                },
+                {
+                    id: 9,
+                    image: 'https://via.placeholder.com/300x200/16213e/ffffff?text=Song+9',
+                    title: 'Forest Whisper',
+                    artist: 'Nature Sounds'
+                },
+                {
+                    id: 10,
+                    image: 'https://via.placeholder.com/300x200/533483/ffffff?text=Song+10',
+                    title: 'Summer Vibes',
+                    artist: 'Sunny Beats'
                 }
             ];
 
-            const togglePlay = () => {
-                setIsPlaying(!isPlaying);
+            const togglePlay = (id) => {
+                if (playingId === id) {
+                    setPlayingId(null);
+                } else {
+                    setPlayingId(id);
+                }
+            };
+
+            const scrollToIndex = (index) => {
+                const track = scrollRef.current;
+                if (!track) return;
+                
+                const cardWidth = 180 + 15; // Width + gap
+                track.scrollTo({
+                    left: index * cardWidth,
+                    behavior: 'smooth'
+                });
+                setActiveIndex(index);
             };
 
             useEffect(() => {
@@ -149,8 +306,8 @@
                 if (!track) return;
 
                 const handleScroll = () => {
-                    const { scrollLeft, children } = track;
-                    const cardWidth = children[0]?.offsetWidth + 20; // Width + gap
+                    const { scrollLeft } = track;
+                    const cardWidth = 180 + 15; // Width + gap
                     const index = Math.round(scrollLeft / cardWidth);
                     setActiveIndex(Math.max(0, Math.min(index, songs.length - 1)));
                 };
@@ -161,27 +318,47 @@
 
             return (
                 <div className="featured-songs-container">
-                    <h2 className="featured-title">Featured songs</h2>
+                    <h2 className="featured-title">Featured Songs</h2>
                     <div className="songs-scroll-container" ref={scrollRef}>
                         <div className="songs-track">
                             {songs.map((song, index) => (
                                 <div
                                     key={song.id}
-                                    className={`song-card ${index === activeIndex ? 'active' : ''}`}
+                                    className={`song-card ${
+                                        index === activeIndex 
+                                            ? 'active' 
+                                            : index === activeIndex - 1 
+                                                ? 'prev' 
+                                                : index === activeIndex + 1 
+                                                    ? 'next' 
+                                                    : ''
+                                    }`}
                                 >
                                     <img src={song.image} alt={song.title} className="song-image" />
                                     <div className="song-info">
-                                        <div>
-                                            <div className="song-title">{song.title}</div>
-                                            <div className="song-artist">{song.artist}</div>
-                                        </div>
-                                        <button className="play-button" onClick={togglePlay}>
-                                            {isPlaying ? '⏹️' : '▶️'} {/* Simple emoji icons for play/stop */}
+                                        <div className="song-title">{song.title}</div>
+                                        <div className="song-artist">{song.artist}</div>
+                                        <button 
+                                            className={`play-button ${playingId === song.id ? 'playing' : ''}`}
+                                            onClick={() => togglePlay(song.id)}
+                                        >
+                                            <span className="play-icon">
+                                                {playingId === song.id ? '❚❚' : '▶'}
+                                            </span>
                                         </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
+                    </div>
+                    <div className="navigation-dots">
+                        {songs.map((_, index) => (
+                            <div
+                                key={index}
+                                className={`dot ${index === activeIndex ? 'active' : ''}`}
+                                onClick={() => scrollToIndex(index)}
+                            />
+                        ))}
                     </div>
                 </div>
             );
