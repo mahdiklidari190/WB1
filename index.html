@@ -1,669 +1,193 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دیجی استار - فروشگاه آنلاین لوازم الکترونیکی</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Featured Songs</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
-        
-        * {
-            font-family: 'Vazirmatn', sans-serif;
-        }
-        
-        .modern-gradient {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
-        }
-        
-        .glass-effect {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .product-card {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #e5e7eb;
+        .featured-songs-container {
             position: relative;
-            overflow: hidden;
+            padding: 20px;
+            max-width: 100%;
         }
-        
-        .product-card::before {
-            content: '';
+
+        .featured-title {
             position: absolute;
             top: 0;
-            left: -100%;
+            right: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+            z-index: 10;
+        }
+
+        .songs-scroll-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            scrollbar-width: none; /* Hide scrollbar in Firefox */
+            -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
+        }
+
+        .songs-scroll-container::-webkit-scrollbar {
+            display: none; /* Hide scrollbar in WebKit browsers */
+        }
+
+        .songs-track {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .song-card {
+            flex: 0 0 300px; /* Fixed width for each card */
+            background: #f9f9f9;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            scroll-snap-align: center;
+            position: relative;
+        }
+
+        .song-card:hover,
+        .song-card.active { /* For the centered card effect */
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 5;
+        }
+
+        .song-image {
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: left 0.5s;
-            z-index: 1;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
         }
-        
-        .product-card:hover::before {
-            left: 100%;
+
+        .song-info {
+            padding: 15px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
         }
-        
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            border-color: #ef4444;
+
+        .song-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
         }
-        
-        .modern-button {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+
+        .song-artist {
+            font-size: 14px;
+            color: #666;
         }
-        
-        .modern-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+
+        .play-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: auto;
+            transition: transform 0.2s ease;
         }
-        
-        .category-card {
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        }
-        
-        .category-card:hover {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            transform: scale(1.05);
-        }
-        
-        .category-card:hover .category-icon {
-            color: white;
-        }
-        
-        .hero-animation {
-            animation: heroFloat 8s ease-in-out infinite;
-        }
-        
-        @keyframes heroFloat {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            25% { transform: translateY(-10px) rotate(1deg); }
-            50% { transform: translateY(-5px) rotate(0deg); }
-            75% { transform: translateY(-15px) rotate(-1deg); }
-        }
-        
-        .slide-up {
-            animation: slideUp 0.6s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .bounce-in {
-            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-        
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        
-        .price-badge {
-            background: linear-gradient(135deg, #10b981, #059669);
-            animation: pulseBadge 2s infinite;
-        }
-        
-        @keyframes pulseBadge {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .search-focus {
-            transition: all 0.3s ease;
-        }
-        
-        .search-focus:focus {
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-            border-color: #ef4444;
-        }
-        
-        .navbar-scroll {
-            transition: all 0.3s ease;
-        }
-        
-        .scrolled {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .mobile-menu {
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .mobile-menu.open {
-            transform: translateX(0);
-        }
-        
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-        
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
-        .toast {
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .toast.show {
-            transform: translateX(0);
-        }
-        
-        .product-image {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            position: relative;
-        }
-        
-        .product-image::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23cbd5e1' viewBox='0 0 24 24'%3E%3Cpath d='M4 4h16v12H4V4zm2 2v8h12V6H6zm2 2h8v4H8V8z'/%3E%3C/svg%3E") center/50% no-repeat;
-            opacity: 0.3;
-        }
-        
-        .product-modal {
-            transform: scale(0.9);
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-        
-        .product-modal.open {
-            transform: scale(1);
-            opacity: 1;
-        }
-        
-        .wishlist-btn.active {
-            color: #ef4444;
-        }
-        
-        .comparison-badge {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        
-        .filter-panel {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        
-        .filter-panel.open {
-            max-height: 500px;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .login-modal {
-            transform: translateY(-50px);
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-        
-        .login-modal.open {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #ef4444;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 768px) {
-            .hero-text { font-size: 2rem; }
-            .product-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-            .category-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
-        }
-        
-        @media (max-width: 640px) {
-            .product-grid { grid-template-columns: 1fr; }
-            .category-grid { grid-template-columns: repeat(2, 1fr); }
+
+        .play-button:hover {
+            transform: scale(1.1);
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Top Bar -->
-    <div class="bg-gray-800 text-white text-sm py-2 hidden md:block">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <div class="flex items-center space-x-4 space-x-reverse">
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    <i class="fas fa-phone text-red-400"></i>
-                    <span>۰۲۱-۹۱۰۰۰۰۰۰</span>
-                </div>
-                <span>|</span>
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    <i class="fas fa-truck text-red-400"></i>
-                    <span>ارسال رایگان برای خریدهای بالای ۵۰۰ هزار تومان</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2 space-x-reverse">
-                <a href="#" class="hover:text-red-400 transition-colors">فروش در دیجی استار</a>
-            </div>
-        </div>
-    </div>
+<body>
+    <div id="root"></div>
 
-    <!-- Main Header -->
-    <header class="bg-white shadow-lg sticky top-0 z-50 navbar-scroll" id="mainHeader">
-        <div class="container mx-auto px-4">
-            <!-- Top Header -->
-            <div class="flex items-center justify-between py-4">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <div class="flex items-center space-x-2 space-x-reverse">
-                        <i class="fas fa-star text-red-500 text-2xl"></i>
-                        <div class="text-2xl font-bold modern-gradient bg-clip-text text-transparent">
-                            دیجی استار
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const FeaturedSongs = () => {
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [activeIndex, setActiveIndex] = useState(0);
+            const scrollRef = useRef(null);
+
+            const songs = [
+                {
+                    id: 1,
+                    image: 'https://via.placeholder.com/300x200?text=Song+1', // Placeholder image
+                    title: 'Song Title 1',
+                    artist: 'Artist Name 1'
+                },
+                {
+                    id: 2,
+                    image: 'https://via.placeholder.com/300x200?text=Song+2',
+                    title: 'Song Title 2',
+                    artist: 'Artist Name 2'
+                },
+                {
+                    id: 3,
+                    image: 'https://via.placeholder.com/300x200?text=Song+3',
+                    title: 'Song Title 3',
+                    artist: 'Artist Name 3'
+                },
+                {
+                    id: 4,
+                    image: 'https://via.placeholder.com/300x200?text=Song+4',
+                    title: 'Song Title 4',
+                    artist: 'Artist Name 4'
+                }
+            ];
+
+            const togglePlay = () => {
+                setIsPlaying(!isPlaying);
+            };
+
+            useEffect(() => {
+                const track = scrollRef.current;
+                if (!track) return;
+
+                const handleScroll = () => {
+                    const { scrollLeft, children } = track;
+                    const cardWidth = children[0]?.offsetWidth + 20; // Width + gap
+                    const index = Math.round(scrollLeft / cardWidth);
+                    setActiveIndex(Math.max(0, Math.min(index, songs.length - 1)));
+                };
+
+                track.addEventListener('scroll', handleScroll);
+                return () => track.removeEventListener('scroll', handleScroll);
+            }, [songs.length]);
+
+            return (
+                <div className="featured-songs-container">
+                    <h2 className="featured-title">Featured songs</h2>
+                    <div className="songs-scroll-container" ref={scrollRef}>
+                        <div className="songs-track">
+                            {songs.map((song, index) => (
+                                <div
+                                    key={song.id}
+                                    className={`song-card ${index === activeIndex ? 'active' : ''}`}
+                                >
+                                    <img src={song.image} alt={song.title} className="song-image" />
+                                    <div className="song-info">
+                                        <div>
+                                            <div className="song-title">{song.title}</div>
+                                            <div className="song-artist">{song.artist}</div>
+                                        </div>
+                                        <button className="play-button" onClick={togglePlay}>
+                                            {isPlaying ? '⏹️' : '▶️'} {/* Simple emoji icons for play/stop */}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
+            );
+        };
 
-                <!-- Search Bar - Hidden on mobile -->
-                <div class="hidden md:flex flex-1 max-w-2xl mx-8">
-                    <div class="relative w-full">
-                        <input type="text" placeholder="جستجو در میان بیش از ۱۰ میلیون کالا..." 
-                               class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl search-focus outline-none"
-                               id="searchInput">
-                        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- User Actions -->
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <!-- Wishlist Button -->
-                    <button class="hidden md:flex items-center space-x-2 space-x-reverse p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            id="wishlistBtn">
-                        <i class="far fa-heart text-gray-600"></i>
-                    </button>
-
-                    <!-- Login Button - Hidden on mobile -->
-                    <button class="hidden md:flex items-center space-x-2 space-x-reverse px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            id="loginBtn">
-                        <i class="fas fa-user text-gray-600"></i>
-                        <span class="text-gray-700">ورود | ثبت‌نام</span>
-                    </button>
-
-                    <div class="hidden md:block w-px h-8 bg-gray-300"></div>
-
-                    <!-- Cart Button -->
-                    <button class="relative p-3 hover:bg-gray-100 rounded-lg transition-all" id="cartBtn">
-                        <i class="fas fa-shopping-cart text-gray-600"></i>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold" id="cartCount">0</span>
-                    </button>
-
-                    <!-- Mobile Menu Button -->
-                    <button class="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors" id="mobileMenuBtn">
-                        <i class="fas fa-bars text-gray-600"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Mobile Search -->
-            <div class="md:hidden pb-4">
-                <div class="relative">
-                    <input type="text" placeholder="جستجو..." class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl search-focus outline-none">
-                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Navigation - Hidden on mobile -->
-            <div class="hidden md:block border-t border-gray-200 py-3">
-                <nav class="flex items-center space-x-8 space-x-reverse">
-                    <button class="flex items-center space-x-2 space-x-reverse px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                            id="categoriesBtn">
-                        <i class="fas fa-bars text-gray-600"></i>
-                        <span class="text-gray-700 font-medium">دسته‌بندی کالاها</span>
-                    </button>
-                    <a href="#" class="text-gray-700 hover:text-red-500 transition-colors font-medium">پرفروش‌ترین‌ها</a>
-                    <a href="#" class="text-gray-700 hover:text-red-500 transition-colors font-medium">تخفیف‌ها و پیشنهادها</a>
-                    <a href="#" class="text-gray-700 hover:text-red-500 transition-colors font-medium">سوپرمارکت</a>
-                    <a href="#" class="text-gray-700 hover:text-red-500 transition-colors font-medium">کارت هدیه</a>
-                    <a href="#" class="text-gray-700 hover:text-red-500 transition-colors font-medium">پشتیبانی</a>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <!-- Categories Panel -->
-    <div class="hidden bg-white shadow-lg border-t" id="categoriesPanel">
-        <div class="container mx-auto px-4 py-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 hover:bg-gray-100 rounded-lg transition-colors">
-                    <i class="fas fa-mobile-alt text-blue-500"></i>
-                    <span>موبایل و تبلت</span>
-                </a>
-                <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 hover:bg-gray-100 rounded-lg transition-colors">
-                    <i class="fas fa-laptop text-purple-500"></i>
-                    <span>لپ‌تاپ و کامپیوتر</span>
-                </a>
-                <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 hover:bg-gray-100 rounded-lg transition-colors">
-                    <i class="fas fa-tv text-green-500"></i>
-                    <span>تلویزیون</span>
-                </a>
-                <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 hover:bg-gray-100 rounded-lg transition-colors">
-                    <i class="fas fa-headphones text-yellow-500"></i>
-                    <span>هدفون و هندزفری</span>
-                </a>
-                <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 hover:bg-gray-100 rounded-lg transition-colors">
-                    <i class="fas fa-clock text-red-500"></i>
-                    <span>ساعت هوشمند</span>
-                </a>
-                <a href="#" class="flex items-center space-x-2 space-x-reverse p-3 hover:bg-gray-100 rounded-lg transition-colors">
-                    <i class="fas fa-camera text-indigo-500"></i>
-                    <span>دوربین</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile Menu -->
-    <div class="fixed inset-0 z-50 md:hidden mobile-menu" id="mobileMenu">
-        <div class="absolute inset-0 bg-black bg-opacity-50" id="mobileMenuOverlay"></div>
-        <div class="absolute right-0 top-0 h-full w-80 bg-white shadow-xl">
-            <div class="p-4 border-b">
-                <div class="flex items-center justify-between">
-                    <div class="text-xl font-bold text-gray-800">منو</div>
-                    <button id="closeMobileMenu" class="p-2 hover:bg-gray-100 rounded-lg">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="p-4 space-y-4">
-                <a href="#" class="flex items-center space-x-3 space-x-reverse p-3 hover:bg-gray-100 rounded-lg">
-                    <i class="fas fa-user text-gray-600"></i>
-                    <span>ورود | ثبت‌نام</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 space-x-reverse p-3 hover:bg-gray-100 rounded-lg">
-                    <i class="fas fa-bars text-gray-600"></i>
-                    <span>دسته‌بندی کالاها</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 space-x-reverse p-3 hover:bg-gray-100 rounded-lg">
-                    <i class="fas fa-chart-line text-gray-600"></i>
-                    <span>پرفروش‌ترین‌ها</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 space-x-reverse p-3 hover:bg-gray-100 rounded-lg">
-                    <i class="fas fa-tags text-gray-600"></i>
-                    <span>تخفیف‌ها و پیشنهادها</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 space-x-reverse p-3 hover:bg-gray-100 rounded-lg">
-                    <i class="fas fa-gift text-gray-600"></i>
-                    <span>کارت هدیه</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 space-x-reverse p-3 hover:bg-gray-100 rounded-lg">
-                    <i class="far fa-heart text-gray-600"></i>
-                    <span>لیست علاقه‌مندی‌ها</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Hero Banner -->
-    <section class="bg-white py-4 md:py-8">
-        <div class="container mx-auto px-4">
-            <div class="modern-gradient rounded-2xl overflow-hidden relative">
-                <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-                <div class="relative z-10 flex items-center justify-between p-6 md:p-12">
-                    <div class="text-white max-w-lg slide-up">
-                        <h1 class="text-3xl md:text-5xl font-bold mb-4 hero-text"> تا ۵۰٪ تخفیف </h1>
-                        <p class="text-lg md:text-xl mb-6 opacity-90"> جشنواره فروش ویژه لوازم الکترونیکی </p>
-                        <button class="modern-button text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg">
-                            مشاهده تخفیف‌ها
-                        </button>
-                    </div>
-                    <div class="hidden lg:block hero-animation">
-                        <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=80&w=400" 
-                             alt="Special Offer" class="w-64 h-64 object-contain">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Quick Access -->
-    <section class="bg-white py-4 md:py-6 border-b">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-center space-x-4 md:space-x-8 space-x-reverse overflow-x-auto">
-                <div class="flex items-center space-x-2 space-x-reverse text-gray-600 hover:text-red-500 cursor-pointer transition-colors whitespace-nowrap">
-                    <i class="fas fa-bolt text-red-500"></i>
-                    <span class="font-medium text-sm md:text-base">پیشنهاد شگفت‌انگیز</span>
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-gray-600 hover:text-red-500 cursor-pointer transition-colors whitespace-nowrap">
-                    <i class="fas fa-tags text-orange-500"></i>
-                    <span class="font-medium text-sm md:text-base">تخفیف‌ها</span>
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-gray-600 hover:text-red-500 cursor-pointer transition-colors whitespace-nowrap">
-                    <i class="fas fa-chart-line text-yellow-500"></i>
-                    <span class="font-medium text-sm md:text-base">پرفروش‌ترین‌ها</span>
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-gray-600 hover:text-red-500 cursor-pointer transition-colors whitespace-nowrap">
-                    <i class="fas fa-gift text-purple-500"></i>
-                    <span class="font-medium text-sm md:text-base">کارت هدیه</span>
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-gray-600 hover:text-red-500 cursor-pointer transition-colors whitespace-nowrap">
-                    <i class="fas fa-box text-blue-500"></i>
-                    <span class="font-medium text-sm md:text-base">تازه‌های دیجی استار</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Categories -->
-    <section class="py-8 md:py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between mb-6 md:mb-8">
-                <h2 class="text-xl md:text-2xl font-bold text-gray-800">خرید بر اساس دسته‌بندی</h2>
-                <a href="#" class="text-red-500 hover:text-red-600 font-medium text-sm md:text-base">مشاهده همه</a>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-4">
-                <div class="category-card rounded-xl p-3 md:p-4 text-center cursor-pointer">
-                    <i class="fas fa-mobile-alt text-2xl md:text-3xl mb-2 md:mb-3 category-icon text-gray-600"></i>
-                    <h3 class="text-xs md:text-sm font-medium">موبایل</h3>
-                </div>
-                <div class="category-card rounded-xl p-3 md:p-4 text-center cursor-pointer">
-                    <i class="fas fa-laptop text-2xl md:text-3xl mb-2 md:mb-3 category-icon text-gray-600"></i>
-                    <h3 class="text-xs md:text-sm font-medium">لپ‌تاپ</h3>
-                </div>
-                <div class="category-card rounded-xl p-3 md:p-4 text-center cursor-pointer">
-                    <i class="fas fa-tv text-2xl md:text-3xl mb-2 md:mb-3 category-icon text-gray-600"></i>
-                    <h3 class="text-xs md:text-sm font-medium">تلویزیون</h3>
-                </div>
-                <div class="category-card rounded-xl p-3 md:p-4 text-center cursor-pointer">
-                    <i class="fas fa-warehouse text-2xl md:text-3xl mb-2 md:mb-3 category-icon text-gray-600"></i>
-                    <h3 class="text-xs md:text-sm font-medium">یخچال</h3>
-                </div>
-                <div class="category-card rounded-xl p-3 md:p-4 text-center cursor-pointer">
-                    <i class="fas fa-tshirt text-2xl md:text-3xl mb-2 md:mb-3 category-icon text-gray-600"></i>
-                    <h3 class="text-xs md:text-sm font-medium">لباسشویی</h3>
-                </div>
-                <div class="category-card rounded-xl p-3 md:p-4 text-center cursor-pointer">
-                    <i class="fas fa-blender text-2xl md:text-3xl mb-2 md:mb-3 category-icon text-gray-600"></i>
-                    <h3 class="text-xs md:text-sm font-medium">ماکروفر</h3>
-                </div>
-                <div class="category-card rounded-xl p-3 md:p-4 text-center cursor-pointer">
-                    <i class="fas fa-headphones text-2xl md:text-3xl mb-2 md:mb-3 category-icon text-gray-600"></i>
-                    <h3 class="text-xs md:text-sm font-medium">هدفون</h3>
-                </div>
-                <div class="category-card rounded-xl p-3 md:p-4 text-center cursor-pointer">
-                    <i class="fas fa-clock text-2xl md:text-3xl mb-2 md:mb-3 category-icon text-gray-600"></i>
-                    <h3 class="text-xs md:text-sm font-medium">ساعت هوشمند</h3>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Amazing Offers -->
-    <section class="py-8 md:py-12 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between mb-6 md:mb-8">
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <i class="fas fa-bolt text-red-500 text-2xl"></i>
-                    <h2 class="text-xl md:text-2xl font-bold text-gray-800">پیشنهاد شگفت‌انگیز</h2>
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-red-500 cursor-pointer">
-                    <span class="font-medium text-sm md:text-base">مشاهده همه</span>
-                    <i class="fas fa-chevron-left"></i>
-                </div>
-            </div>
-            
-            <!-- Filter Bar -->
-            <div class="bg-gray-100 rounded-xl p-4 mb-6">
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <div class="flex items-center space-x-4 space-x-reverse">
-                        <span class="font-medium">فیلترها:</span>
-                        <button class="bg-white px-4 py-2 rounded-lg border hover:border-red-500 transition-colors">
-                            <span>همه محصولات</span>
-                        </button>
-                        <button class="bg-white px-4 py-2 rounded-lg border hover:border-red-500 transition-colors">
-                            <span>تخفیف دار</span>
-                        </button>
-                        <button class="bg-white px-4 py-2 rounded-lg border hover:border-red-500 transition-colors">
-                            <span>پرفروش</span>
-                        </button>
-                    </div>
-                    <div class="flex items-center space-x-2 space-x-reverse">
-                        <span class="text-gray-600">مرتب‌سازی:</span>
-                        <select class="bg-white px-4 py-2 rounded-lg border focus:border-red-500 outline-none">
-                            <option>پرفروش‌ترین</option>
-                            <option>گران‌ترین</option>
-                            <option>ارزان‌ترین</option>
-                            <option>جدیدترین</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6" id="productsGrid">
-                <!-- Products will be dynamically loaded -->
-            </div>
-            
-            <!-- Pagination -->
-            <div class="flex justify-center mt-8">
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-200 hover:bg-red-500 hover:text-white transition-colors">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                    <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-red-500 text-white">1</button>
-                    <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-200 hover:bg-red-500 hover:text-white transition-colors">2</button>
-                    <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-200 hover:bg-red-500 hover:text-white transition-colors">3</button>
-                    <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-200 hover:bg-red-500 hover:text-white transition-colors">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Best Sellers -->
-    <section class="py-8 md:py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between mb-6 md:mb-8">
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <i class="fas fa-chart-line text-yellow-500 text-2xl"></i>
-                    <h2 class="text-xl md:text-2xl font-bold text-gray-800">پرفروش‌ترین‌ها</h2>
-                </div>
-                <div class="flex items-center space-x-2 space-x-reverse text-red-500 cursor-pointer">
-                    <span class="font-medium text-sm md:text-base">مشاهده همه</span>
-                    <i class="fas fa-chevron-left"></i>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6" id="bestSellersGrid">
-                <!-- Best sellers will be dynamically loaded -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Services -->
-    <section class="py-8 md:py-12 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <div class="flex items-center space-x-3 md:space-x-4 space-x-reverse p-4 md:p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-truck text-green-500 text-2xl md:text-3xl"></i>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm md:text-base">ارسال رایگان</h3>
-                        <p class="text-xs md:text-sm text-gray-600">برای خریدهای بالای ۵۰۰ هزار تومان</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3 md:space-x-4 space-x-reverse p-4 md:p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-sync-alt text-blue-500 text-2xl md:text-3xl"></i>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm md:text-base">۷ روز ضمانت بازگشت</h3>
-                        <p class="text-xs md:text-sm text-gray-600">بازگشت آسان کالا</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3 md:space-x-4 space-x-reverse p-4 md:p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-shield-alt text-purple-500 text-2xl md:text-3xl"></i>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm md:text-base">ضمانت اصالت کالا</h3>
-                        <p class="text-xs md:text-sm text-gray-600">تضمین اصل بودن</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3 md:space-x-4 space-x-reverse p-4 md:p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                    <i class="fas fa-headset text-orange-500 text-2xl md:text-3xl"></i>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm md:text-base">پشتیبانی ۲۴/۷</h3>
-                        <p class="text-xs md:text-sm text-gray-600">هفت روز هفته</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white">
-        <div class="container mx-auto px-4 py-8 md:py-12">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                <div>
-                    <div class="flex items-center space-x-2 space-x-reverse mb-4">
-                        <i class="fas fa-star text-red-500 text-2xl"></i>
-                        <div class="text-xl md:text-2xl font-bold">دیجی استار</div>
-                    </div>
-                    <p class="text-gray-400 mb-6 text-sm md:text-base
+        ReactDOM.render(<FeaturedSongs />, document.getElementById('root'));
+    </script>
+</body>
+</html>
